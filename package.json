@@ -1,0 +1,21 @@
+{
+  "name": "kannada-language-agent",
+  "version": "1.0.0",
+  "description": "Daily Kannada word learning agent",
+  "main": "index.ts",
+  "scripts": {
+    "start": "tsx index.ts"
+  },
+  "dependencies": {
+    "@google-cloud/text-to-speech": "^6.1.0",
+    "axios": "^1.6.7",
+    "dotenv": "^16.4.5",
+    "nodemailer": "^6.9.12"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "@types/nodemailer": "^6.4.14",
+    "tsx": "^4.7.1",
+    "typescript": "^5.3.3"
+  }
+}
