@@ -2,7 +2,7 @@ import { config } from 'dotenv'
 import axios from 'axios'
 import fs from 'fs'
 import path from 'path'
-import { generateWordsWithClaude } from './utils/claude'
+import { generateWordsWithClaude } from './claude'
 
 config()
 
