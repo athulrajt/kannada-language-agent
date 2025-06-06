@@ -2,7 +2,7 @@ import { config } from 'dotenv'
 import axios from 'axios'
 import fs from 'fs'
 import path from 'path'
-import { generateWordsWithClaude } from './claude'
+import * as claude from './claude'
 
 config()
 
@@ -96,5 +96,5 @@ Important:
 - Include exactly 3 different usage examples for each word/phrase
 - For banking phrases, generate NEW and DIFFERENT scenarios each time, not the same ones as previous emails`;
 
-  return generateWordsWithClaude(prompt);
+  return claude.generateWordsWithClaude(prompt);
 }
