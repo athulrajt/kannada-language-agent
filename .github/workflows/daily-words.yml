@@ -27,4 +27,8 @@ jobs:
         EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
         EMAIL_TO: ${{ secrets.EMAIL_TO }}
         ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+<<<<<<< HEAD
       run: npm start 
+=======
+      run: npm start 
+>>>>>>> 2e25e10bb872ce67f0c669058a7dc0e68cd390b1
