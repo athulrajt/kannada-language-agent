@@ -52,6 +52,20 @@ export async function generateWords(usedWords: string[]): Promise<any[]> {
    - English translation
 5. Include a helpful tip for remembering the word
 
+For the first two simple words:
+- Generate DIFFERENT common words each time
+- Choose from various categories like:
+  * Nature (e.g., rain, sun, moon, stars, trees)
+  * Food (e.g., rice, curry, fruits, vegetables)
+  * Animals (e.g., dog, cat, bird, fish)
+  * Emotions (e.g., happy, sad, angry, surprised)
+  * Daily activities (e.g., walk, run, eat, sleep)
+  * Household items (e.g., chair, table, bed, lamp)
+  * Weather (e.g., hot, cold, windy, cloudy)
+  * Time (e.g., morning, evening, night, today)
+- Make sure these words are different from previous emails
+- Keep them simple and commonly used in daily life
+
 For the banking-related phrases (last 3 items):
 - Generate DIFFERENT banking scenarios each time
 - Include a mix of:
@@ -94,7 +108,8 @@ Important:
 - Make sure each usage example is different and practical
 - Ensure the JSON is valid and complete
 - Include exactly 3 different usage examples for each word/phrase
-- For banking phrases, generate NEW and DIFFERENT scenarios each time, not the same ones as previous emails`;
+- For banking phrases, generate NEW and DIFFERENT scenarios each time, not the same ones as previous emails
+- For the first two simple words, make sure to choose DIFFERENT words from previous emails and from different categories`;
 
   return claude.generateWordsWithClaude(prompt);
 }
