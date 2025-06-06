@@ -1,4 +1,4 @@
-import { generateWordsWithClaude } from './utils/words'
+import { generateWords } from './utils/words'
 import { sendEmail } from './utils/email'
 import { loadUsedWords, saveUsedWords } from './utils/words'
 import dotenv from 'dotenv'
@@ -24,7 +24,7 @@ async function main() {
     console.log('📚 Previously used words:', usedWords)
 
     // Generate new words
-    const newWords = await generateWordsWithClaude(usedWords)
+    const newWords = await generateWords(usedWords)
     console.log('✨ Generated new words:', newWords)
 
     // Send email
@@ -34,7 +34,7 @@ async function main() {
     // Save new words to used words list
     const updatedUsedWords = [...usedWords, ...newWords.map((w: Word) => w.kannada)]
     await saveUsedWords(updatedUsedWords)
-    console.log('�� Updated used words list')
+    console.log(' Updated used words list')
 
   } catch (error) {
     console.error('❌ Error:', error)

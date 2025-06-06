@@ -63,3 +63,50 @@ Return ONLY a complete JSON object in the following format, with no additional t
     }
   }
 }
+
+export async function generateWordsWithClaude(prompt: string): Promise<any[]> {
+  const headers = {
+    'x-api-key': process.env.ANTHROPIC_API_KEY,
+    'anthropic-version': '2023-06-01',
+    'content-type': 'application/json'
+  };
+
+  try {
+    const response = await axios.post(
+      'https://api.anthropic.com/v1/messages',
+      {
+        model: 'claude-3-5-haiku-20241022',
+        max_tokens: 4000,
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ]
+      },
+      { headers }
+    );
+
+    const content = response.data.content[0].text;
+    console.log('Claude raw response:', content);
+
+    try {
+      const words = JSON.parse(content);
+      if (!Array.isArray(words) || words.length !== 5) {
+        throw new Error('Response is not an array of 5 items');
+      }
+      return words;
+    } catch (parseError) {
+      console.error('Error parsing Claude response:', parseError);
+      throw new Error('Failed to parse Claude response as JSON');
+    }
+  } catch (error) {
+    console.error('Error calling Claude API:', error);
+    throw error;
+  }
+}
+
+export default {
+  summarizeWithClaude,
+  generateWordsWithClaude
+}

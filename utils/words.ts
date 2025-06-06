@@ -2,6 +2,7 @@ import { config } from 'dotenv'
 import axios from 'axios'
 import fs from 'fs'
 import path from 'path'
+import claude from './claude'
 
 config()
 
@@ -17,12 +18,13 @@ interface Word {
   tip: string;
 }
 
-const USED_WORDS_FILE = path.join(process.cwd(), 'used_words.json')
+const USED_WORDS_FILE = path.join(__dirname, '../data/used_words.json')
 
-export function loadUsedWords(): string[] {
+export async function loadUsedWords(): Promise<string[]> {
   try {
     if (fs.existsSync(USED_WORDS_FILE)) {
-      return JSON.parse(fs.readFileSync(USED_WORDS_FILE, 'utf-8'))
+      const data = await fs.promises.readFile(USED_WORDS_FILE, 'utf-8')
+      return JSON.parse(data)
     }
     return []
   } catch (error) {
@@ -31,108 +33,68 @@ export function loadUsedWords(): string[] {
   }
 }
 
-export function saveUsedWords(words: string[]) {
+export async function saveUsedWords(words: string[]): Promise<void> {
   try {
-    fs.writeFileSync(USED_WORDS_FILE, JSON.stringify(words, null, 2))
+    await fs.promises.writeFile(USED_WORDS_FILE, JSON.stringify(words, null, 2))
   } catch (error) {
     console.error('Error saving used words:', error)
   }
 }
 
-export async function generateWordsWithClaude(usedWords: string[]): Promise<Word[]> {
-  const prompt = `Generate 5 items that haven't been used before:
+export async function generateWords(usedWords: string[]): Promise<any[]> {
+  const prompt = `Generate 5 new Kannada words/phrases. The first two should be simple/common words, and the last three should be banking-related phrases. Each word/phrase must:
+1. Be a single word or phrase (no underscores or spaces in single words)
+2. Include transliteration
+3. Include English meaning
+4. Include THREE DIFFERENT usage examples (not the same as previous emails), each with:
+   - Kannada script
+   - Transliteration
+   - English translation
+5. Include a helpful tip for remembering the word
 
-1. First 2 items should be:
-   - Simple, common Kannada words used in daily life
-   - Easy to pronounce and remember
-   - Not in this list of used words: ${usedWords.join(', ')}
+For the banking-related phrases (last 3 items):
+- Generate DIFFERENT banking scenarios each time
+- Include a mix of:
+  * Customer requests (e.g., "I want to transfer money", "I need a bank statement", "I want to update my mobile number")
+  * Staff questions (e.g., "Do you have your ID proof?", "Would you like to set up internet banking?", "Have you received the OTP?")
+  * Transaction-related phrases (e.g., "Please enter your PIN", "Your transaction is successful", "Please collect your receipt")
+- Keep common terms like "credit card", "OTP", "PIN", "ID proof" in English
+- Make each example unique and practical for daily banking interactions
 
-2. Next 3 items should be:
-   - Common banking interactions in Kannada
-   - Include both staff questions and customer requests
-   - Examples of staff questions:
-     * "Do you need a credit card?"
-     * "Please sign here"
-     * "Please tell OTP"
-     * "Please come tomorrow"
-   - Examples of customer requests:
-     * "I want to deposit cash"
-     * "I need monthly bank statement"
-     * "I want to open new account"
-   - Keep English terms like 'credit card', 'OTP', 'account' as is
-   - Make it natural and conversational
-
-Each item should be:
-   - Include transliteration in English letters
-   - Include 2 usage examples with transliteration
-   - Have a helpful tip for remembering
-
-Return a JSON array of 5 objects, each with this exact format:
-{
-  "kannada": "ಕನ್ನಡಪದ",
-  "transliteration": "kannadapada",
-  "english": "English meaning",
-  "usageExamples": [
-    {
-      "kannada": "ಉದಾಹರಣೆ೧",
-      "transliteration": "udaaharane1",
-      "english": "Example 1 in English"
-    },
-    {
-      "kannada": "ಉದಾಹರಣೆ೨",
-      "transliteration": "udaaharane2",
-      "english": "Example 2 in English"
-    }
-  ],
-  "tip": "A helpful tip to remember this word/phrase"
-}
-
-Rules:
-1. Return ONLY the JSON array, nothing else
-2. Each item must be unique and not in the used words list
-3. Make sure the JSON is valid and complete
-4. Include transliteration for both the main text and examples
-5. Keep the tips short and memorable
-6. First 2 items should be simple words, last 3 should be banking interactions
-7. Keep English terms like 'credit card', 'OTP', 'account' as is in the Kannada text`;
-
-  const headers = {
-    'x-api-key': process.env.ANTHROPIC_API_KEY,
-    'anthropic-version': '2023-06-01',
-    'content-type': 'application/json'
-  };
-
-  try {
-    const response = await axios.post(
-      'https://api.anthropic.com/v1/messages',
+Format the response as a JSON array of objects with this structure:
+[
+  {
+    "kannada": "ಕನ್ನಡ_ಪದ",
+    "transliteration": "kannada pada",
+    "english": "Kannada word",
+    "usageExamples": [
       {
-        model: 'claude-3-5-haiku-20241022',
-        max_tokens: 4000,
-        messages: [
-          {
-            role: 'user',
-            content: prompt
-          }
-        ]
+        "kannada": "ಉದಾಹರಣೆ ೧",
+        "transliteration": "udaaharane 1",
+        "english": "Example 1"
       },
-      { headers }
-    );
-
-    const content = response.data.content[0].text;
-    console.log('Claude raw response:', content);
-
-    try {
-      const words = JSON.parse(content);
-      if (!Array.isArray(words) || words.length !== 5) {
-        throw new Error('Response is not an array of 5 items');
+      {
+        "kannada": "ಉದಾಹರಣೆ ೨",
+        "transliteration": "udaaharane 2",
+        "english": "Example 2"
+      },
+      {
+        "kannada": "ಉದಾಹರಣೆ ೩",
+        "transliteration": "udaaharane 3",
+        "english": "Example 3"
       }
-      return words;
-    } catch (parseError) {
-      console.error('Error parsing Claude response:', parseError);
-      throw new Error('Failed to parse Claude response as JSON');
-    }
-  } catch (error) {
-    console.error('Error calling Claude API:', error);
-    throw error;
+    ],
+    "tip": "Helpful tip for remembering"
   }
+]
+
+Important:
+- Each word/phrase must be unique and not in this list: ${JSON.stringify(usedWords)}
+- For banking phrases, keep common terms like "credit card" and "OTP" in English
+- Make sure each usage example is different and practical
+- Ensure the JSON is valid and complete
+- Include exactly 3 different usage examples for each word/phrase
+- For banking phrases, generate NEW and DIFFERENT scenarios each time, not the same ones as previous emails`;
+
+  return claude.generateWordsWithClaude(prompt);
 }
